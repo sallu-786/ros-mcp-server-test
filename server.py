@@ -224,10 +224,11 @@ def get_connect_to_robot(ip: Optional[str] = None, port: Optional[int] = None, p
     )
 )
 def get_subscribe_for_trigger(topic: str, msg_type: str, trigger_field: str, trigger_value, comparison: str = "eq", 
-                         timeout: float = 30.0, queue_length: int = None, throttle_rate_ms: int = None) -> dict:
+                         wait_time: float = 30.0, num_tries: int = 0, max_tries: int = 5, 
+                         queue_length: int = None, throttle_rate_ms: int = None) -> dict:
     
     return subscribe_for_trigger(ws_manager, topic, msg_type, trigger_field, trigger_value, 
-                            comparison, timeout, queue_length, throttle_rate_ms)
+                            comparison, wait_time, num_tries, max_tries, queue_length, throttle_rate_ms)
 
 
 if __name__ == "__main__":
