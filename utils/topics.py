@@ -577,7 +577,9 @@ def subscribe_for_trigger(
     trigger_field: str,
     trigger_value,
     comparison: str = "eq",  # "eq", "ge", "le", "gt", "lt", "ne"
-    timeout: float = 30.0,
+    wait_time: float = 30.0,
+    num_tries: int = 0,
+    max_tries: int = 5,
     queue_length: Optional[int] = None,
     throttle_rate_ms: Optional[int] = None,
 ) -> dict:
@@ -590,7 +592,7 @@ def subscribe_for_trigger(
         trigger_field (str): Field to check (supports dot notation, e.g. 'pose.pose.position.x').
         trigger_value: Value to compare against.
         comparison (str): Comparison operator: 'eq', 'ge', 'le', 'gt', 'lt', 'ne'.
-        timeout (float): Max seconds to wait.
+        global_timeout (float): Max seconds to wait.
         queue_length (Optional[int]): Message buffer size.
         throttle_rate_ms (Optional[int]): Throttle rate in ms.
 
@@ -634,16 +636,25 @@ def subscribe_for_trigger(
         if send_error:
             return {"triggered": False, "reason": f"Failed to subscribe: {send_error}"}
 
-        end_time = time.time() + timeout
-        while time.time() < end_time:
-            response = ws_manager.receive(timeout=0.5)
+        end_time = time.time() + wait_time
+        
+        if max_tries<=0:
+             return {"triggered": False, "reason": "max_tries must be greater than 0"}
+
+        while time.time() < end_time and num_tries < max_tries:
+            response = ws_manager.receive(timeout=0.5)   # timeout for single receive call
+            num_tries += 1
+
             if not response:
                 continue
             msg_data = parse_json(response)
+            
             if not msg_data:
                 continue
+            
             if msg_data.get("op") == "status" and msg_data.get("level") == "error":
                 return {"triggered": False, "reason": f"Rosbridge error: {msg_data.get('msg', 'Unknown error')}"}
+            
             if msg_data.get("op") == "publish" and msg_data.get("topic") == topic:
                 msg = msg_data.get("msg", {})
                 val = get_field(msg, trigger_field)
