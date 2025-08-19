@@ -126,6 +126,21 @@ def get_publish_for_duration(
     topic: str = "", msg_type: str = "", messages: list = [], durations: list = []) -> dict:
     return publish_for_duration (ws_manager, topic, msg_type, messages, durations)
 
+@mcp.tool(
+    description=(
+        "Wait for a trigger on a ROS topic. Returns when a message's field meets the trigger condition.\n"
+        "Example:"
+        "wait_for_trigger(topic='/turtle1/odom', msg_type='nav_msgs/Odometry', trigger_field='pose.pose.position.x',"
+        "trigger_value=5.0, comparison='ge', timeout=60.0)"
+    )
+)
+def get_subscribe_for_trigger(topic: str, msg_type: str, trigger_field: str, trigger_value, comparison: str = "eq", 
+                         wait_time: float = 30.0, num_tries: int = 0, max_tries: int = 5, 
+                         queue_length: int = None, throttle_rate_ms: int = None) -> dict:
+    
+    return subscribe_for_trigger(ws_manager, topic, msg_type, trigger_field, trigger_value, 
+                            comparison, wait_time, num_tries, max_tries, queue_length, throttle_rate_ms)
+
 
 ## ############################################################################################## ##
 ##
@@ -214,21 +229,6 @@ def get_connect_to_robot(ip: Optional[str] = None, port: Optional[int] = None, p
     return connect_to_robot(
         ws_manager, ip, port, ping_timeout, port_timeout)
 
-
-@mcp.tool(
-    description=(
-        "Wait for a trigger on a ROS topic. Returns when a message's field meets the trigger condition.\n"
-        "Example:"
-        "wait_for_trigger(topic='/turtle1/odom', msg_type='nav_msgs/Odometry', trigger_field='pose.pose.position.x',"
-        "trigger_value=5.0, comparison='ge', timeout=60.0)"
-    )
-)
-def get_subscribe_for_trigger(topic: str, msg_type: str, trigger_field: str, trigger_value, comparison: str = "eq", 
-                         wait_time: float = 30.0, num_tries: int = 0, max_tries: int = 5, 
-                         queue_length: int = None, throttle_rate_ms: int = None) -> dict:
-    
-    return subscribe_for_trigger(ws_manager, topic, msg_type, trigger_field, trigger_value, 
-                            comparison, wait_time, num_tries, max_tries, queue_length, throttle_rate_ms)
 
 
 if __name__ == "__main__":
